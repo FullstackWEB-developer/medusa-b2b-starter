@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Medusa B2B Starter: a pnpm + Turborepo monorepo with a Medusa v2 backend (`apps/backend`) and a Next.js 15 storefront (`apps/storefront`). Adds companies, employees, spending limits, approvals, and quotes on top of Medusa commerce.
+Medusa B2B Starter: an npm-workspaces + Turborepo monorepo with a Medusa 2.22 backend (`apps/backend`) and a Next.js 16 storefront (`apps/storefront`). Adds companies, employees, spending limits, approvals, and quotes on top of Medusa commerce.
 
 ## Before You Start
 
-1. **Package manager**: read `packageManager` in the root `package.json` (`pnpm@9.15.0`), then confirm with the lockfile (`pnpm-lock.yaml`). Never use npm or yarn here.
+1. **Package manager**: use npm workspaces, declared in the root `package.json` and locked by `package-lock.json`. Do not use pnpm or yarn.
 2. **Optional apps**: both `apps/backend` and `apps/storefront` exist in this repo. If you work from a fork, run `ls apps` before assuming either is present.
 3. **Load the matching Medusa skill**: `building-with-medusa` (backend), `building-admin-dashboard-customizations` (admin UI), `building-storefronts` (storefront). See [Medusa Skills & MCP](#medusa-skills--mcp).
 4. **Read the package AGENTS.md** for the `@medusajs/*` package you are about to use. See [Medusa Package Docs](#medusa-package-docs-node_modules).
@@ -15,19 +15,19 @@ Run from the repo root unless noted. Root scripts fan out through Turborepo.
 
 | Task | Command |
 |------|---------|
-| Install | `pnpm install` |
-| Dev (backend :9000, storefront :8000) | `pnpm dev` |
-| Build both apps | `pnpm build` |
-| Lint both apps | `pnpm lint` |
-| Backend HTTP integration tests | `pnpm test:integration:http` |
-| Run a script in one app | `pnpm --filter @b2b-starter/backend <script>` (or `@b2b-starter/storefront`) |
-| Run migrations | `cd apps/backend && pnpm medusa db:migrate` |
-| Generate migrations for a module | `cd apps/backend && pnpm medusa db:generate <module>` (`company`, `quote`, `approval`) |
-| Create admin user | `cd apps/backend && pnpm medusa user -e <email> -p <password>` |
+| Install | `npm install` |
+| Dev (backend :9000, storefront :8000) | `npm run dev` |
+| Build both apps | `npm run build` |
+| Lint both apps | `npm run lint` |
+| Backend HTTP integration tests | `npm run test:integration:http` |
+| Run a script in one app | `npm run <script> --workspace=@b2b-starter/backend` (or `@b2b-starter/storefront`) |
+| Run migrations | `npm exec --workspace=@b2b-starter/backend -- medusa db:migrate` |
+| Generate migrations for a module | `npm exec --workspace=@b2b-starter/backend -- medusa db:generate <module>` (`company`, `quote`, `approval`) |
+| Create admin user | `npm exec --workspace=@b2b-starter/backend -- medusa user -e <email> -p <password>` |
 
 - Node `>=22.22.0` is enforced (`engine-strict=true` in `.npmrc`).
 - HTTP integration tests need a reachable PostgreSQL; `@medusajs/test-utils` creates a temporary database per run.
-- Do not rely on `pnpm test`, `pnpm test:unit`, or `pnpm test:integration:modules`: no app defines `test`, and there are no `*.unit.spec.ts` or `src/modules/*/__tests__` files, so the latter two exit with "No tests found".
+- The backend defines `test:unit` and `test:integration:modules`, but this checkout currently has no matching test files, so those scripts report "No tests found". `npm test` also has no app-level `test` task to run.
 
 ## Directory Structure
 
@@ -51,7 +51,7 @@ Run from the repo root unless noted. Root scripts fan out through Turborepo.
 │   │       ├── types/              # Shared types per domain
 │   │       ├── utils/
 │   │       └── workflows/          # approval/, company/, employee/, order/, quote/, hooks/ (core-flow hooks)
-│   └── storefront/                 # Next.js 15 App Router (@b2b-starter/storefront)
+│   └── storefront/                 # Next.js 16 App Router (@b2b-starter/storefront)
 │       └── src/
 │           ├── app/[countryCode]/  # (main) and (checkout) route groups
 │           ├── lib/
@@ -62,7 +62,7 @@ Run from the repo root unless noted. Root scripts fan out through Turborepo.
 │           ├── modules/            # UI by feature: account, cart, checkout, products, quotes, ...
 │           └── types/
 ├── eslint.config.ts                # Root ESLint config (@medusajs/eslint-plugin)
-├── pnpm-workspace.yaml             # Workspaces: apps/*
+├── package.json                    # npm workspaces: apps/*
 └── turbo.json
 ```
 
@@ -93,7 +93,7 @@ Published `@medusajs/*` packages ship an `AGENTS.md` at `node_modules/@medusajs/
 find node_modules apps/*/node_modules -maxdepth 6 -path "*/@medusajs/*/AGENTS.md" 2>/dev/null
 ```
 
-- Older Medusa versions don't include it. This repo pins `2.21.2`, which predates it, so the command currently returns nothing. When it's missing, fall back to the skills and the docs MCP server.
+- Package `AGENTS.md` files may not be present in the installed packages. When a file is missing, fall back to the skills and the docs MCP server.
 - Never edit files under `node_modules/`.
 
 | Package | Read it for |
@@ -147,14 +147,14 @@ It exposes deployments, build/runtime logs, environment variables, and store dat
 - Guessing Medusa APIs from memory when the package `AGENTS.md` or the docs MCP is available.
 - Mutating commerce data through raw module service calls (e.g. `cartModule.updateCarts`) instead of `@medusajs/core-flows` workflows, which skips hooks, events, and compensation.
 - Importing from `@medusajs/utils` / `@medusajs/types` in backend server code instead of `@medusajs/framework/*`.
-- Changing a data model without running `pnpm medusa db:generate <module>` and committing the migration.
-- Running npm or yarn, which ignores `pnpm-lock.yaml` and the workspace setup.
-- Calling `pnpm test` and assuming tests passed: it runs nothing.
+- Changing a data model without generating the corresponding migration with `npm exec --workspace=@b2b-starter/backend -- medusa db:generate <module>`.
+- Running pnpm or yarn, which ignores `package-lock.json` and the npm workspace setup.
+- Calling `npm test` and assuming tests passed: it runs no app-level test task.
 
 ## Off-Limits
 
 - `node_modules/`: read the package docs there, but never edit installed packages.
 - `.env`, `.env.local`: never commit or print values. Edit `.env.template` for new variables.
-- `pnpm-lock.yaml`: only change it via `pnpm install`/`pnpm add`.
+- `package-lock.json`: only change it via npm install commands.
 - Existing migration files in `src/modules/*/migrations/`: generate new ones instead of editing.
 - `.medusa/`, `.next/`, `.turbo/`: build output.

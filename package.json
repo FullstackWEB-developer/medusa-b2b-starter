@@ -1,6 +1,9 @@
 {
   "name": "b2b-starter",
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "npm@11.19.0",
+  "workspaces": [
+    "apps/*"
+  ],
   "engines": {
     "node": ">=22.22.0"
   },
@@ -20,10 +23,8 @@
     "jiti": "^2.7.0",
     "turbo": "^2.3.3"
   },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.0.5",
-      "@types/react-dom": "19.0.5"
-    }
+  "overrides": {
+    "@types/react": "19.0.5",
+    "@types/react-dom": "19.0.5"
   }
 }

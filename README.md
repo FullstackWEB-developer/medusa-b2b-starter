@@ -64,14 +64,14 @@ The fastest way to get started is deploying with [Medusa Cloud](https://cloud.me
 >
 > - [Node.js](https://nodejs.org/) v22.22+
 > - [PostgreSQL](https://www.postgresql.org/) v15+
-> - [pnpm](https://pnpm.io/) v9 (pinned to `pnpm@9.15.0` via `packageManager`)
+> - npm 11.19.0 (declared in `packageManager`)
 
 1. Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/medusajs/b2b-starter.git
 cd b2b-starter
-pnpm install
+npm install
 ```
 
 2. Set up environment variables for the backend:
@@ -91,21 +91,21 @@ DATABASE_URL=postgres://postgres:@localhost:5432/medusa-b2b-starter
 
 ```bash
 cd apps/backend
-pnpm medusa db:migrate
+npm exec --workspace=@b2b-starter/backend -- medusa db:migrate
 ```
 
 5. Add admin user:
 
 ```bash
 cd apps/backend
-pnpm medusa user -e admin@test.com -p supersecret
+npm exec --workspace=@b2b-starter/backend -- medusa user -e admin@test.com -p supersecret
 ```
 
 6. Start Medusa backend:
 
 ```bash
 cd apps/backend
-pnpm dev
+npm run dev --workspace=@b2b-starter/backend
 ```
 
 7. Open the admin dashboard at `localhost:9000/app` and log in. Retrieve your publishable API key at Settings > Publishable API key.
@@ -126,7 +126,7 @@ NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_6c3...
 
 ```bash
 cd apps/storefront
-pnpm dev
+npm run dev --workspace=@b2b-starter/storefront
 ```
 
 The storefront runs on `http://localhost:8000`.
@@ -134,7 +134,7 @@ The storefront runs on `http://localhost:8000`.
 You can also run the following command from the root to start both backend and storefront:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ## Project Structure
@@ -145,7 +145,7 @@ apps/
 └── storefront/   # Next.js 15 App Router storefront
 ```
 
-The repo is a pnpm workspace orchestrated by [Turborepo](https://turborepo.com). Root scripts (`dev`, `build`, `lint`, `test:integration:http`) run in each app.
+The repo is an npm workspace orchestrated by [Turborepo](https://turborepo.com). Root scripts (`dev`, `build`, `lint`, `test:integration:http`) run in each app.
 
 ## Configuration
 
